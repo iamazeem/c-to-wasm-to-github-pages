@@ -1,19 +1,7 @@
 # c-to-wasm-to-github-pages
 
-C to WebAssembly to GitHub Pages (Sample)
+This is a minimal example of compiling a small C CLI app to WebAssembly using
+[emscripten](https://emscripten.org/index.html) and deploying it to GitHub
+Pages.
 
-## Build
-
-```shell
-# Native
-make
-
-# WebAssembly
-make wasm
-```
-
-## Run
-
-```shell
-emrun --kill-start --kill-exit n.html -- [n]
-```
+See the [CI workflow](.github/workflows/ci.yml) for build/deployment details.

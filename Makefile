@@ -6,12 +6,14 @@ all: build
 
 build: clean
 	$(CC) $(CFLAGS) $(SOURCE) -o $(TARGET) $(LDFLAGS)
+	@echo "Built successfully!"
 
 test: build
 	@(! ./n 2>/dev/null)
 	@(! ./n -1 2>/dev/null)
 	@(! ./n 11 2>/dev/null)
 	@(./n 1 >/dev/null && ./n 10 >/dev/null)
+	@echo "Tested successfully!"
 
 build-wasm:
 	emmake make build \
