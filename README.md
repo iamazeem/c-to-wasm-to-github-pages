@@ -10,6 +10,10 @@ Live GitHub Pages site: <https://iamazeem.github.io/c-to-wasm-to-github-pages/>
 
 Locally built and tested on Ubuntu 22.04 LTS.
 
+## Demo
+
+![demo](demo.gif)
+
 ## Build and run locally
 
 - Set up [emsdk](https://emscripten.org/docs/getting_started/downloads.html)
