@@ -1,5 +1,5 @@
 SOURCE = n.c
-TARGET = n n.html n.js n.wasm
+TARGET = n
 
 all: build
 
@@ -13,9 +13,11 @@ test:
 	@(./n 1 >/dev/null && ./n 10 >/dev/null)
 
 wasm:
-	emmake make build TARGET=n.html LDFLAGS=--emrun
+	emmake make build \
+		CFLAGS="-O3 -Os -sINVOKE_RUN=0 -sEXPORTED_RUNTIME_METHODS='[\"callMain\"]'" \
+		TARGET=$(TARGET).js
 
 clean:
-	$(RM) $(TARGET)
+	$(RM) $(TARGET) $(TARGET).js $(TARGET).wasm
 
 .PHONY: all build test clean

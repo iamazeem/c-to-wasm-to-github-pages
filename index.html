@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>c-to-wasm-to-github-pages</title>
+
+  <script type="text/javascript">
+    var Module = {
+      print: (function () {
+        return (...args) => {
+          const output = args.join(" ");
+          updateStdout(output);
+        };
+      })(),
+      printErr: (function () {
+        return (...args) => {
+          const output = args.join(" ");
+          updateStdout(output);
+        };
+      })()
+    };
+
+    function runApp() {
+      const input = document.getElementById("input").value.trim();
+      const args = (input !== "" ? [input] : []);
+      const exitCode = Module.callMain(args);
+      const exitCodeMsg = "exit code: " + exitCode + "\n";
+      updateStdout(exitCodeMsg);
+    }
+
+    function updateStdout(output) {
+      const outputTextArea = document.getElementById("output");
+      outputTextArea.value += output + "\n";
+      outputTextArea.scrollTop = outputTextArea.scrollHeight;
+    }
+  </script>
+</head>
+
+<body>
+  <table>
+    <thead>
+      <tr>
+        <td colspan="2" style="text-align: center;">
+          <h3>
+            <a href="https://github.com/iamazeem/c-to-wasm-to-github-pages">c-to-wasm-to-github-pages</a>
+          </h3>
+        </td>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>input</td>
+        <td>
+          <input type="text" id="input" value="5" style="text-align: center;">
+          <input type="button" id="run" value="Run" style="width: 73px;" onclick="runApp();">
+        </td>
+      </tr>
+      <tr>
+        <td>output</td>
+        <td>
+          <textarea id="output" rows="10" cols="30" readonly style="resize: none"></textarea>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <script async type="text/javascript" src="n.js"></script>
+</body>
+
+</html>
