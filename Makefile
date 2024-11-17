@@ -17,7 +17,8 @@ test: build
 
 build-wasm:
 	emmake make build \
-		CFLAGS="-O3 -Os -sINVOKE_RUN=0 -sEXPORTED_RUNTIME_METHODS='[\"callMain\"]'" \
+		CFLAGS="-O3 -Os" \
+		LDFLAGS="-sINVOKE_RUN=0 -sEXPORTED_RUNTIME_METHODS='[\"callMain\"]'" \
 		TARGET=$(TARGET_WASM).js
 
 serve-wasm: build-wasm
