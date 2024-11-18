@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>c-to-wasm-to-github-pages</title>
+
+  <script type="text/javascript">
+    var Module = {
+      print: (function () {
+        return (...args) => {
+          const output = args.join(" ");
+          console.log(output);
+          updateOutput(output);
+        };
+      })(),
+      printErr: (function () {
+        return (...args) => {
+          const output = args.join(" ");
+          console.error(output);
+          updateOutput(output);
+        };
+      })()
+    };
+
+    function runApp() {
+      const inputFilename = document.getElementById("input-filename").value.trim();
+      const outputFilename = document.getElementById("output-filename").value.trim();
+      if (inputFilename === "") {
+        window.alert("[input-filename] cannot be empty!");
+        return;
+      } else if (outputFilename === "") {
+        window.alert("[output-filename] cannot be empty!");
+        return;
+      }
+      const args = [inputFilename, outputFilename];
+      const exitCode = Module.callMain(args);
+      if (exitCode === 0) {
+        dumpOutputFile(outputFilename);
+      }
+      const exitCodeMsg = "exit code: " + exitCode + "\n";
+      updateOutput(exitCodeMsg);
+    }
+
+    function dumpOutputFile(outputFilename) {
+      const outputTextArea = document.getElementById("output");
+      const outputFileContent = FS.readFile(outputFilename, { encoding: "utf8" });
+      outputTextArea.value += "[" + outputFilename + "]\n";
+      outputTextArea.value += outputFileContent;
+      outputTextArea.value += "---\n";
+    }
+
+    function updateOutput(output) {
+      const outputTextArea = document.getElementById("output");
+      outputTextArea.value += output + "\n";
+      outputTextArea.scrollTop = outputTextArea.scrollHeight;
+    }
+  </script>
+</head>
+
+<body>
+  <table style="margin-left: auto; margin-right: auto;">
+    <thead>
+      <tr>
+        <td colspan="2" style="text-align: center;">
+          <h3>
+            <a href="https://github.com/iamazeem/c-to-wasm-to-github-pages">c-to-wasm-to-github-pages (rw)</a>
+          </h3>
+        </td>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>input filename</td>
+        <td>
+          <input type="text" id="input-filename" value="test.txt" style="width: 200px; text-align: center;">
+        </td>
+      </tr>
+      <tr>
+        <td>output filename</td>
+        <td>
+          <input type="text" id="output-filename" value="out.txt" style="width: 200px; text-align: center;">
+        </td>
+      </tr>
+      <tr>
+        <td></td>
+        <td style="text-align: center;">
+          <input type="button" id="rw" value="RW" onclick="runApp();">
+        </td>
+      </tr>
+      <tr>
+        <td>output</td>
+        <td>
+          <textarea id="output" wrap="off" readonly style="width: 200px; height: 200px; resize: none"></textarea>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <script async type="text/javascript" src="rw.js"></script>
+</body>
+
+</html>

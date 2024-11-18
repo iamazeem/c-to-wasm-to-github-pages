@@ -57,3 +57,6 @@ n.js
 n.wasm
 
 emsdk
+rw/rw
+rw/site/rw.js
+rw/site/rw.wasm

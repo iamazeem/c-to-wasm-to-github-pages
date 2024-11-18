@@ -3,6 +3,7 @@ name: ci
 on:
   push:
     branches: [main]
+    paths-ignore: ['rw']
   workflow_dispatch:
 
 jobs:
