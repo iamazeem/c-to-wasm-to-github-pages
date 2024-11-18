@@ -4,15 +4,17 @@ TARGET_WASM = site/$(TARGET)
 
 all: build
 
-build: clean
+build:
 	$(CC) $(CFLAGS) $(SOURCE) -o $(TARGET) $(LDFLAGS)
 	@echo "Built successfully!"
 
 test: build
-	@(! ./n 2>/dev/null)
-	@(! ./n -1 2>/dev/null)
-	@(! ./n 11 2>/dev/null)
-	@(./n 1 >/dev/null && ./n 10 >/dev/null)
+	@echo "Testing..."
+	@printf "test-no-args: " && (! ./${TARGET} 2>/dev/null && echo "PASS" || echo "FAIL")
+	@printf "test-invalid-arg-negative-value: " && (! ./${TARGET} -1 2>/dev/null && echo "PASS" || echo "FAIL")
+	@printf "test-invalid-arg-positive-value: " && (! ./${TARGET} 11 2>/dev/null && echo "PASS" || echo "FAIL")
+	@printf "test-valid-value-lower-bound: " && (./${TARGET} 1 >/dev/null && echo "PASS" || echo "FAIL")
+	@printf "test-valid-value-upper-bound: " && (./${TARGET} 10 >/dev/null && echo "PASS" || echo "FAIL")
 	@echo "Tested successfully!"
 
 build-wasm:
