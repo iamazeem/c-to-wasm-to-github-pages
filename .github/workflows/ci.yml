@@ -67,6 +67,7 @@ jobs:
         ARTIFACT_ID: ${{ needs.ci.outputs.artifact-id }}
         PAGES_BUILD_VERSION: ${{ needs.ci.outputs.artifact-id }}
       run: |
+        echo "ARTIFACT_ID: [$ARTIFACT_ID]"
         gh api \
           --method POST \
           -H "Accept: application/vnd.github+json" \
