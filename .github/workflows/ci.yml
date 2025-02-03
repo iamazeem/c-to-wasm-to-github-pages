@@ -6,9 +6,17 @@ on:
     paths-ignore: ['rw']
   workflow_dispatch:
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   ci:
     runs-on: ubuntu-latest
+
+    outputs:
+      artifact-id: ${{ steps.upload.outputs.artifact_id }}
+
     steps:
     - name: Setup emsdk
       uses: mymindstorm/setup-emsdk@v14
@@ -24,6 +32,7 @@ jobs:
 
     - name: Upload GitHub Pages artifacts
       uses: actions/upload-pages-artifact@v3
+      id: upload
       with:
         path: site/
 
@@ -40,6 +49,31 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
+    # - name: Deploy to GitHub Pages
+    #   id: deployment
+    #   uses: actions/deploy-pages@v4
+
+    - name: Get OIDC token
+      run: |
+        RESPONSE=$(curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL")
+        OIDC_TOKEN=$(jq -r '.value' <<< "${RESPONSE}")
+        echo "::add-mask::${OIDC_TOKEN}"
+        echo "OIDC_TOKEN=$OIDC_TOKEN" >>"$GITHUB_ENV"
+
     - name: Deploy to GitHub Pages
       id: deployment
-      uses: actions/deploy-pages@v4
+      env:
+        GH_TOKEN: ${{ github.token }}
+        ARTIFACT_ID: ${{ needs.ci.outputs.artifact-id }}
+        PAGES_BUILD_VERSION: ${{ needs.ci.outputs.artifact-id }}
+      run: |
+        gh api \
+          --method POST \
+          -H "Accept: application/vnd.github+json" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          "/repos/$GITHUB_REPOSITORY/pages/deployments" \
+          -f "artifact_id=$ARTIFACT_ID" \
+          -f "environment=github-pages" \
+          -f "pages_build_version=$PAGES_BUILD_VERSION" \
+          -f "oidc_token=$OIDC_TOKEN" \
+          -F "preview=false"
