@@ -54,11 +54,12 @@ jobs:
         path: artifact.tar
 
     - name: Get OIDC token
+      id: oidc
       run: |
         RESPONSE=$(curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL")
         OIDC_TOKEN=$(jq -r '.value' <<< "${RESPONSE}")
-        echo "::add-mask::${OIDC_TOKEN}"
-        echo "OIDC_TOKEN=$OIDC_TOKEN" >>"$GITHUB_ENV"
+        # echo "::add-mask::${OIDC_TOKEN}"
+        echo "TOKEN=$OIDC_TOKEN" >>"$GITHUB_OUTPUT"
 
     - name: Deploy to GitHub Pages
       id: deployment
@@ -74,10 +75,10 @@ jobs:
           -H "Accept: application/vnd.github+json" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
           "/repos/$GITHUB_REPOSITORY/pages/deployments" \
-          -F "artifact_id=$ARTIFACT_ID" \
           -f "environment=github-pages" \
-          -f "pages_build_version=$PAGES_BUILD_VERSION" \
-          -f "oidc_token=$OIDC_TOKEN" \
+          -F "artifact_id=${{ steps.upload.outputs.artifact-id }}" \
+          -f "pages_build_version=${{ steps.upload.outputs.artifact-digest }}" \
+          -f "oidc_token=${{ steps.oidc.outputs.token }}" \
           -F "preview=false" \
           --jq '.'
 
