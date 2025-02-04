@@ -10,12 +10,16 @@ defaults:
   run:
     shell: bash
 
+permissions:
+  pages: write
+  id-token: write
+
 jobs:
   ci:
     runs-on: ubuntu-latest
 
-    outputs:
-      artifact-id: ${{ steps.upload.outputs.artifact_id }}
+    # outputs:
+    #   artifact-id: ${{ steps.upload.outputs.artifact_id }}
 
     steps:
     - name: Setup emsdk
@@ -30,27 +34,70 @@ jobs:
     - name: Build for WebAssembly
       run: emmake make clean build-wasm
 
-    - name: Upload GitHub Pages artifacts
-      uses: actions/upload-pages-artifact@v3
+    - name: Create artifact tar
+      run: |
+        tar \
+        --dereference \
+        --hard-dereference \
+        --exclude=.git \
+        --exclude=.github \
+        --exclude=".[^/]*" \
+        --directory "site" \
+        -cvf "artifact.tar" \
+        .
+
+    - name: Upload github-pages artifact
+      uses: actions/upload-artifact@v4
       id: upload
       with:
-        path: site
+        name: github-pages
+        path: artifact.tar
 
-  deploy:
-    needs: ci
-    runs-on: ubuntu-latest
+    - name: Get OIDC token
+      run: |
+        RESPONSE=$(curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL")
+        OIDC_TOKEN=$(jq -r '.value' <<< "${RESPONSE}")
+        echo "::add-mask::${OIDC_TOKEN}"
+        echo "OIDC_TOKEN=$OIDC_TOKEN" >>"$GITHUB_ENV"
 
-    permissions:
-      pages: write
-      id-token: write
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
     - name: Deploy to GitHub Pages
       id: deployment
       env:
-        GITHUB_SHA: ${{ needs.ci.outputs.artifact-id }}
-      uses: actions/deploy-pages@v4
+        GH_DEBUG: api
+        GH_TOKEN: ${{ github.token }}
+        ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+        PAGES_BUILD_VERSION: ${{ steps.upload.outputs.artifact-digest }}
+      run: |
+        echo "ARTIFACT_URL: [$ARTIFACT_URL]"
+        gh api \
+          --method POST \
+          -H "Accept: application/vnd.github+json" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          "/repos/$GITHUB_REPOSITORY/pages/deployments" \
+          -f "artifact_url=$ARTIFACT_URL" \
+          -f "environment=github-pages" \
+          -f "pages_build_version=$PAGES_BUILD_VERSION" \
+          -f "oidc_token=$OIDC_TOKEN" \
+          -F "preview=false" \
+          --jq '.'
+
+    # - name: Upload GitHub Pages artifacts
+    #   uses: actions/upload-pages-artifact@v3
+    #   id: upload
+    #   with:
+    #     path: site
+
+  # deploy:
+  #   needs: ci
+  #   runs-on: ubuntu-latest
+
+  #   environment:
+  #     name: github-pages
+  #     url: ${{ steps.deployment.outputs.page_url }}
+
+  #   steps:
+  #   - name: Deploy to GitHub Pages
+  #     id: deployment
+  #     env:
+  #       GITHUB_SHA: ${{ needs.ci.outputs.artifact-id }}
+  #     uses: actions/deploy-pages@v4
