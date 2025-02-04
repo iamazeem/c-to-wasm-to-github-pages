@@ -53,6 +53,11 @@ jobs:
     #   id: deployment
     #   uses: actions/deploy-pages@v4
 
+    - name: Download github-pages artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: github-pages
+
     - name: Get OIDC token
       run: |
         RESPONSE=$(curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL")
