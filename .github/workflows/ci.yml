@@ -57,9 +57,8 @@ jobs:
       id: oidc
       run: |
         RESPONSE=$(curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL")
-        OIDC_TOKEN=$(jq -r '.value' <<< "${RESPONSE}")
-        # echo "::add-mask::${OIDC_TOKEN}"
-        echo "TOKEN=$OIDC_TOKEN" >>"$GITHUB_OUTPUT"
+        TOKEN=$(jq -r '.value' <<< "${RESPONSE}")
+        echo "TOKEN=$TOKEN" | tee -a "$GITHUB_OUTPUT"
 
     - name: Deploy to GitHub Pages
       id: deployment
@@ -74,7 +73,7 @@ jobs:
           --method POST \
           -H "Accept: application/vnd.github+json" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
-          "/repos/$GITHUB_REPOSITORY/pages/deployments" \
+          "/repos/${{ github.repository }}/pages/deployments" \
           -f "environment=github-pages" \
           -F "artifact_id=${{ steps.upload.outputs.artifact-id }}" \
           -f "pages_build_version=${{ steps.upload.outputs.artifact-digest }}" \
