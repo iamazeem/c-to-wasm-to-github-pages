@@ -14,6 +14,9 @@ jobs:
   ci:
     runs-on: ubuntu-latest
 
+    outputs:
+      artifact-id: ${{ steps.upload.outputs.artifact_id }}
+
     steps:
     - name: Setup emsdk
       uses: mymindstorm/setup-emsdk@v14
@@ -48,4 +51,6 @@ jobs:
     steps:
     - name: Deploy to GitHub Pages
       id: deployment
+      env:
+        GITHUB_SHA: ${{ needs.ci.outputs.artifact-id }}
       uses: actions/deploy-pages@v4
