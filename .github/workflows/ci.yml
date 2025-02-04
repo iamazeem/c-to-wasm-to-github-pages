@@ -18,9 +18,6 @@ jobs:
   ci:
     runs-on: ubuntu-latest
 
-    # outputs:
-    #   artifact-id: ${{ steps.upload.outputs.artifact_id }}
-
     steps:
     - name: Setup emsdk
       uses: mymindstorm/setup-emsdk@v14
@@ -34,70 +31,21 @@ jobs:
     - name: Build for WebAssembly
       run: emmake make clean build-wasm
 
-    - name: Create artifact tar
-      run: |
-        tar \
-        --dereference \
-        --hard-dereference \
-        --exclude=.git \
-        --exclude=.github \
-        --exclude=".[^/]*" \
-        --directory "site" \
-        -cvf "artifact.tar" \
-        .
-
-    - name: Upload github-pages artifact
-      uses: actions/upload-artifact@v4
+    - name: Upload GitHub Pages artifacts
+      uses: actions/upload-pages-artifact@v3
       id: upload
       with:
-        name: github-pages
-        path: artifact.tar
+        path: site
 
-    - name: Get OIDC token
-      id: oidc
-      run: |
-        RESPONSE=$(curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL")
-        TOKEN=$(jq -r '.value' <<< "${RESPONSE}")
-        echo "TOKEN=$TOKEN" | tee -a "$GITHUB_OUTPUT"
+  deploy:
+    needs: ci
+    runs-on: ubuntu-latest
 
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
     - name: Deploy to GitHub Pages
       id: deployment
-      env:
-        GH_DEBUG: api
-        GH_TOKEN: ${{ github.token }}
-        ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
-        PAGES_BUILD_VERSION: ${{ steps.upload.outputs.artifact-digest }}
-      run: |
-        echo "ARTIFACT_ID: [$ARTIFACT_ID]"
-        gh api \
-          --method POST \
-          -H "Accept: application/vnd.github+json" \
-          -H "X-GitHub-Api-Version: 2022-11-28" \
-          "/repos/${{ github.repository }}/pages/deployments" \
-          -f "environment=github-pages" \
-          -F "artifact_id=${{ steps.upload.outputs.artifact-id }}" \
-          -f "pages_build_version=${{ steps.upload.outputs.artifact-digest }}" \
-          -f "oidc_token=${{ steps.oidc.outputs.token }}" \
-          -F "preview=false" \
-          --jq '.'
-
-    # - name: Upload GitHub Pages artifacts
-    #   uses: actions/upload-pages-artifact@v3
-    #   id: upload
-    #   with:
-    #     path: site
-
-  # deploy:
-  #   needs: ci
-  #   runs-on: ubuntu-latest
-
-  #   environment:
-  #     name: github-pages
-  #     url: ${{ steps.deployment.outputs.page_url }}
-
-  #   steps:
-  #   - name: Deploy to GitHub Pages
-  #     id: deployment
-  #     env:
-  #       GITHUB_SHA: ${{ needs.ci.outputs.artifact-id }}
-  #     uses: actions/deploy-pages@v4
+      uses: actions/deploy-pages@v4
