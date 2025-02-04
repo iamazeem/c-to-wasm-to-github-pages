@@ -63,6 +63,7 @@ jobs:
     - name: Deploy to GitHub Pages
       id: deployment
       env:
+        GH_DEBUG: api
         GH_TOKEN: ${{ github.token }}
         ARTIFACT_ID: ${{ needs.ci.outputs.artifact-id }}
         PAGES_BUILD_VERSION: ${{ needs.ci.outputs.artifact-id }}
@@ -72,7 +73,7 @@ jobs:
           --method POST \
           -H "Accept: application/vnd.github+json" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
-          "/repos/$GITHUB_REPOSITORY/pages/deployments" \
+          "/repos/{owner}/{repo}/pages/deployments" \
           -F "artifact_id=$ARTIFACT_ID" \
           -f "environment=github-pages" \
           -f "pages_build_version=$PAGES_BUILD_VERSION" \
