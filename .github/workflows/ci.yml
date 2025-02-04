@@ -65,16 +65,16 @@ jobs:
       env:
         GH_DEBUG: api
         GH_TOKEN: ${{ github.token }}
-        ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+        ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
         PAGES_BUILD_VERSION: ${{ steps.upload.outputs.artifact-digest }}
       run: |
-        echo "ARTIFACT_URL: [$ARTIFACT_URL]"
+        echo "ARTIFACT_ID: [$ARTIFACT_ID]"
         gh api \
           --method POST \
           -H "Accept: application/vnd.github+json" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
           "/repos/$GITHUB_REPOSITORY/pages/deployments" \
-          -f "artifact_url=$ARTIFACT_URL" \
+          -F "artifact_id=$ARTIFACT_ID" \
           -f "environment=github-pages" \
           -f "pages_build_version=$PAGES_BUILD_VERSION" \
           -f "oidc_token=$OIDC_TOKEN" \
